@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Shared Memories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        .font-handwriting { font-family: 'Dancing Script', cursive; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        
+        .pin-dot { 
+            transition: all 0.2s ease; 
+            background-color: #e5e7eb; 
+            border: 1px solid #d1d5db; 
+        }
+        .pin-dot.active { 
+            background-color: #ec4899; 
+            border-color: #db2777; 
+            transform: scale(1.2); 
+        }
+        
+        .corkboard { 
+            background-color: #d6d3d1; 
+            background-image: radial-gradient(#b0adab 1px, transparent 1px); 
+            background-size: 20px 20px; 
+        }
+
+        .keypad-btn {
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .keypad-btn:active {
+            background-color: #fce7f3 !important;
+            transform: scale(0.95);
+        }
+
+        .ai-loading {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        #sync-indicator {
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-pink-50 min-h-screen">
+    <div id="app">
+        <!-- Lock Screen -->
+        <div id="lock-screen" class="flex flex-col items-center justify-center min-h-screen fixed inset-0 z-[100] bg-pink-50">
+            <div id="lock-container" class="bg-white p-8 rounded-3xl shadow-2xl w-[90%] max-w-sm border border-pink-100 text-center">
+                <div class="mb-6">
+                    <div class="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Our Secret Space</h2>
+                    <p class="text-gray-500 text-sm mt-1">Enter the pin to see our moments</p>
+                </div>
+
+                <div id="pin-display" class="flex justify-center gap-3 mb-8">
+                    <div class="pin-dot w-4 h-4 rounded-full"></div>
+                    <div class="pin-dot w-4 h-4 rounded-full"></div>
+                    <div class="pin-dot w-4 h-4 rounded-full"></div>
+                    <div class="pin-dot w-4 h-4 rounded-full"></div>
+                    <div class="pin-dot w-4 h-4 rounded-full"></div>
+                    <div class="pin-dot w-4 h-4 rounded-full"></div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <button type="button" onclick="addDigit('1')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">1</button>
+                    <button type="button" onclick="addDigit('2')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">2</button>
+                    <button type="button" onclick="addDigit('3')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">3</button>
+                    <button type="button" onclick="addDigit('4')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">4</button>
+                    <button type="button" onclick="addDigit('5')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">5</button>
+                    <button type="button" onclick="addDigit('6')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">6</button>
+                    <button type="button" onclick="addDigit('7')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">7</button>
+                    <button type="button" onclick="addDigit('8')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">8</button>
+                    <button type="button" onclick="addDigit('9')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">9</button>
+                    <button type="button" onclick="backspace()" class="keypad-btn h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+                    </button>
+                    <button type="button" onclick="addDigit('0')" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xl font-bold">0</button>
+                    <button type="button" onclick="clearPin()" class="keypad-btn h-14 rounded-2xl bg-gray-100 text-xs font-bold text-gray-400">CLR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Board -->
+        <div id="main-board" class="hidden min-h-screen corkboard pb-20">
+            <nav class="bg-white/95 backdrop-blur shadow-sm p-4 sticky top-0 z-40 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">💝</span>
+                    <div>
+                        <h1 class="font-bold text-gray-800 leading-none">Our Shared Memories</h1>
+                        <span id="sync-status" class="text-[10px] text-green-500 font-bold uppercase tracking-widest">Online & Synced</span>
+                    </div>
+                </div>
+                <button onclick="generateDateIdea()" id="ai-date-btn" class="text-xs bg-pink-100 text-pink-600 px-3 py-1.5 rounded-full font-bold border border-pink-200 flex items-center gap-1 hover:bg-pink-200 transition-colors">
+                    ✨ Plan a Date
+                </button>
+            </nav>
+
+            <div id="board-grid" class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Memories will appear here -->
+            </div>
+
+            <button onclick="openModal()" class="fixed bottom-6 right-6 bg-pink-500 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-50 transform active:scale-90 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+        </div>
+
+        <!-- Add Modal -->
+        <div id="modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Add New Memory</h3>
+                
+                <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
+                    <button id="type-note" onclick="setType('note')" class="flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm">Note</button>
+                    <button id="type-photo" onclick="setType('photo')" class="flex-1 py-2 rounded-lg font-bold text-sm">Photo</button>
+                </div>
+
+                <div id="note-input">
+                    <div class="relative">
+                        <textarea id="content-text" class="w-full h-32 p-3 bg-yellow-50 border border-yellow-200 rounded-xl outline-none focus:ring-2 focus:ring-yellow-300" placeholder="Write something sweet..."></textarea>
+                        <button onclick="enhanceNote()" id="enhance-btn" class="absolute bottom-2 right-2 text-[10px] bg-white/80 hover:bg-white border border-pink-200 text-pink-500 font-bold py-1 px-2 rounded-lg shadow-sm">
+                            ✨ Make it Sweet
+                        </button>
+                    </div>
+                </div>
+
+                <div id="photo-input" class="hidden text-center">
+                    <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFile(event)">
+                    <div onclick="document.getElementById('file-input').click()" class="w-full h-32 border-2 border-dashed border-pink-200 rounded-xl flex items-center justify-center bg-pink-50 overflow-hidden cursor-pointer">
+                        <img id="img-preview" class="hidden w-full h-full object-cover">
+                        <span id="img-placeholder" class="text-pink-400 font-bold text-sm">Tap to Select Photo</span>
+                    </div>
+                    <div class="relative mt-3">
+                        <input id="content-caption" type="text" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-pink-200" placeholder="Add a caption...">
+                        <button onclick="enhanceCaption()" id="enhance-caption-btn" class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] bg-white/80 border border-pink-100 text-pink-500 font-bold py-1 px-2 rounded-lg">
+                            ✨ AI
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-6">
+                    <button onclick="closeModal()" class="flex-1 py-3 font-bold text-gray-500">Cancel</button>
+                    <button onclick="saveMemory()" class="flex-[2] py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg">Pin It!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global state and config
+        const apiKey = ""; // Gemini Key
+        const SECRET_PIN = "162930";
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'love-board-shared';
+        const firebaseConfig = JSON.parse(__firebase_config);
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let memories = [];
+        let currentType = 'note';
+        let base64Image = null;
+        let currentPin = "";
+
+        // --- AUTHENTICATION ---
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+                document.getElementById('sync-status').innerText = "Offline Mode";
+                document.getElementById('sync-status').classList.replace('text-green-500', 'text-red-500');
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                setupFirestoreListener();
+            }
+        });
+
+        initAuth();
+
+        // --- FIRESTORE SYNC ---
+        function setupFirestoreListener() {
+            // RULE 1: Use strictly formatted public path for sharing
+            const memoriesCol = collection(db, 'artifacts', appId, 'public', 'data', 'memories');
+            
+            // Listen for changes
+            onSnapshot(memoriesCol, (snapshot) => {
+                memories = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                
+                renderBoard();
+                document.getElementById('sync-status').innerText = "Online & Synced";
+            }, (error) => {
+                console.error("Firestore error:", error);
+                document.getElementById('sync-status').innerText = "Sync Error";
+            });
+        }
+
+        // --- CORE FUNCTIONS ---
+        window.addDigit = (digit) => {
+            if (currentPin.length < 6) {
+                currentPin += digit;
+                updatePinUI();
+                if (currentPin.length === 6) {
+                    setTimeout(verifyPin, 150);
+                }
+            }
+        };
+
+        window.backspace = () => {
+            currentPin = currentPin.slice(0, -1);
+            updatePinUI();
+        };
+
+        window.clearPin = () => {
+            currentPin = "";
+            updatePinUI();
+        };
+
+        function updatePinUI() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, i) => {
+                if (i < currentPin.length) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+        }
+
+        function verifyPin() {
+            if (currentPin === SECRET_PIN) {
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('main-board').classList.remove('hidden');
+                renderBoard();
+            } else {
+                const container = document.getElementById('lock-container');
+                container.classList.add('animate-shake');
+                setTimeout(() => {
+                    container.classList.remove('animate-shake');
+                    clearPin();
+                }, 400);
+            }
+        }
+
+        window.openModal = () => document.getElementById('modal').classList.remove('hidden');
+        window.closeModal = () => {
+            document.getElementById('modal').classList.add('hidden');
+            resetForm();
+        };
+
+        window.setType = (type) => {
+            currentType = type;
+            document.getElementById('type-note').className = type === 'note' ? 'flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-lg font-bold text-sm';
+            document.getElementById('type-photo').className = type === 'photo' ? 'flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-lg font-bold text-sm';
+            document.getElementById('note-input').classList.toggle('hidden', type !== 'note');
+            document.getElementById('photo-input').classList.toggle('hidden', type !== 'photo');
+        };
+
+        window.handleFile = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                base64Image = event.target.result;
+                document.getElementById('img-preview').src = base64Image;
+                document.getElementById('img-preview').classList.remove('hidden');
+                document.getElementById('img-placeholder').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.saveMemory = async () => {
+            if (!currentUser) return;
+
+            const contentText = document.getElementById('content-text').value;
+            const contentCaption = document.getElementById('content-caption').value;
+
+            const newMemory = {
+                type: currentType,
+                timestamp: new Date().toLocaleDateString(),
+                createdAt: serverTimestamp(),
+                userId: currentUser.uid
+            };
+
+            if (currentType === 'note') {
+                if (!contentText) return;
+                newMemory.content = contentText;
+            } else {
+                if (!base64Image) return;
+                newMemory.image = base64Image;
+                newMemory.caption = contentCaption;
+            }
+
+            try {
+                const docId = Date.now().toString();
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'memories', docId);
+                await setDoc(docRef, newMemory);
+                closeModal();
+            } catch (e) {
+                console.error("Save error:", e);
+            }
+        };
+
+        window.deleteMemory = async (id) => {
+            if (confirm("Delete this memory for everyone?")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'memories', id));
+                } catch (e) {
+                    console.error("Delete error:", e);
+                }
+            }
+        };
+
+        function resetForm() {
+            document.getElementById('content-text').value = "";
+            document.getElementById('content-caption').value = "";
+            document.getElementById('img-preview').src = "";
+            document.getElementById('img-preview').classList.add('hidden');
+            document.getElementById('img-placeholder').classList.remove('hidden');
+            base64Image = null;
+        }
+
+        function renderBoard() {
+            const grid = document.getElementById('board-grid');
+            if (memories.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400 font-bold">Your shared board is empty. Start pinning!</div>`;
+                return;
+            }
+
+            grid.innerHTML = memories.map(item => {
+                const bgClass = item.isAI ? 'bg-pink-100 border-pink-300' : (item.type === 'note' ? 'bg-yellow-100 border-yellow-200' : 'bg-white border-gray-100');
+                
+                if (item.type === 'note') {
+                    return `
+                        <div class="relative ${bgClass} p-6 shadow-lg rotate-1 transform hover:rotate-0 transition-all group min-h-[160px] border-b-4">
+                            <button onclick="deleteMemory('${item.id}')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-500 font-bold text-xl px-2">×</button>
+                            <p class="font-handwriting text-2xl text-gray-800 break-words">${item.content}</p>
+                            <p class="absolute bottom-2 right-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">${item.isAI ? 'AI Idea' : item.timestamp}</p>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="relative ${bgClass} p-3 pb-8 shadow-lg -rotate-1 transform hover:rotate-0 transition-all group border">
+                            <button onclick="deleteMemory('${item.id}')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-500 font-bold text-xl px-2 z-10">×</button>
+                            <div class="overflow-hidden mb-3 bg-gray-50 aspect-square">
+                                <img src="${item.image}" class="w-full h-full object-cover">
+                            </div>
+                            <p class="font-handwriting text-center text-xl text-gray-700">${item.caption}</p>
+                            <p class="absolute bottom-1 right-2 text-[10px] text-gray-300 font-bold">${item.timestamp}</p>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // --- GEMINI API HELPER ---
+        async function callGemini(prompt, systemPrompt = "") {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "Something went wrong ✨";
+                } catch (e) {
+                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                }
+            }
+            return "Connection failed.";
+        }
+
+        window.enhanceNote = async () => {
+            const text = document.getElementById('content-text').value;
+            if (!text) return;
+            const btn = document.getElementById('enhance-btn');
+            btn.innerText = "✨ Thinking...";
+            const enhanced = await callGemini(`Rewrite to be more poetic and romantic: "${text}"`, "Warm, poetic, brief tone.");
+            document.getElementById('content-text').value = enhanced.trim().replace(/^"|"$/g, '');
+            btn.innerText = "✨ Make it Sweet";
+        };
+
+        window.enhanceCaption = async () => {
+            const text = document.getElementById('content-caption').value;
+            const btn = document.getElementById('enhance-caption-btn');
+            btn.innerText = "✨";
+            const enhanced = await callGemini(`Write a cute 1-sentence caption for: "${text || 'us'}"`, "Brief, sweet, 1 sentence.");
+            document.getElementById('content-caption').value = enhanced.trim().replace(/^"|"$/g, '');
+            btn.innerText = "✨ AI";
+        };
+
+        window.generateDateIdea = async () => {
+            const btn = document.getElementById('ai-date-btn');
+            btn.innerHTML = "✨ Picking...";
+            const history = memories.slice(0, 5).map(m => m.content || m.caption).join(', ');
+            const idea = await callGemini(`Based on memories: [${history}], suggest one unique date idea.`, "Creative romance planner. 2 sentences max.");
+            
+            // Add as local temporary note
+            const aiNote = { id: 'ai-' + Date.now(), type: 'note', content: "✨ Date Idea: " + idea, timestamp: "Just Now", isAI: true };
+            memories.unshift(aiNote);
+            renderBoard();
+            btn.innerHTML = "✨ Plan a Date";
+        };
+    </script>
+</body>
+</html>
